@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>きんゆう女子｜MVPモック（静的・下タブ・#8ddcd1）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind CDN用の軽い拡張（任意）
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#8ddcd1"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root { --primary:#8ddcd1; }
+    .btn-primary{ background:var(--primary); color:#083b37; }
+    .btn-primary:hover{ filter:brightness(0.95); }
+    .ring-today{ box-shadow:0 0 0 2px #111 inset; border-radius:12px; }
+    .tab-active{ background:var(--primary); color:#083b37; font-weight:700; }
+    .tab-inactive{ background:#f3f4f6; color:#111; }
+  </style>
+</head>
+<body class="bg-neutral-50 text-neutral-900">
+  <!-- ヘッダー -->
+  <header class="px-4 py-3 border-b bg-white sticky top-0 z-10 flex items-center justify-between">
+    <div class="font-bold">きんゆう女子（MVPモック）</div>
+    <div class="text-xs text-neutral-500">
+      学習ポイント: <span id="pts" class="font-semibold">1,200</span>pt
+    </div>
+  </header>
+
+  <!-- 本文 -->
+  <main class="max-w-3xl mx-auto p-4 pb-28" id="content">
+    <!-- HOME（目標家計簿） -->
+    <section id="home" class="space-y-4">
+      <!-- 目標カード -->
+      <section class="bg-white rounded-2xl shadow-sm p-4 grid grid-cols-[64px_1fr] gap-3 items-center">
+        <div class="relative w-16 h-16">
+          <div id="ringFill" class="absolute inset-0 rounded-full" style="background: linear-gradient(135deg, #b9eee6, var(--primary));"></div>
+          <div class="absolute inset-1 rounded-full bg-white flex items-center justify-center text-sm font-bold" id="progressTxt">27%</div>
+        </div>
+        <div>
+          <div class="font-semibold">🎯 海外旅行 300,000円 / 期限 2025-12-31</div>
+          <div class="text-xs text-neutral-500">残り 218,000円</div>
+          <div class="mt-1 text-sm">AIひと言：小さな一歩が積み重なっています。今日はメモだけでもOK。</div>
+        </div>
+      </section>
+
+      <!-- 入力ボックス（承認フローは削除） -->
+      <section class="bg-white rounded-2xl shadow-sm p-4 space-y-3">
+        <div class="grid grid-cols-3 gap-2">
+          <input id="inAmount" placeholder="金額（空でもOK）" class="col-span-1 px-3 py-2 border rounded-xl"/>
+          <input id="inNote" placeholder="メモ（1行）" class="col-span-2 px-3 py-2 border rounded-xl"/>
+        </div>
+        <div class="flex gap-2 text-xs">
+          <button data-tag="saving" class="tag-btn px-3 py-1 rounded-full border tab-active">貯金</button>
+          <button data-tag="expense" class="tag-btn px-3 py-1 rounded-full border tab-inactive">支出</button>
+          <button data-tag="bill" class="tag-btn px-3 py-1 rounded-full border tab-inactive">請求</button>
+          <button data-tag="income" class="tag-btn px-3 py-1 rounded-full border tab-inactive">給料</button>
+          <div class="ml-auto">
+            <button id="btnSaveLog" class="px-4 py-2 rounded-xl btn-primary">保存 +10pt</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- カレンダー（承認や提案ドットは無し） -->
+      <section class="bg-white rounded-2xl shadow-sm p-4">
+        <div class="flex items-center justify-between mb-2">
+          <button id="prevMonth" class="text-sm px-2 py-1">←</button>
+          <div id="monthLabel" class="font-semibold"></div>
+          <button id="nextMonth" class="text-sm px-2 py-1">→</button>
+        </div>
+        <div class="grid grid-cols-7 gap-2 text-center text-xs text-neutral-500 mb-1">
+          <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
+        </div>
+        <div id="calendar" class="grid grid-cols-7 gap-2"></div>
+        <div class="mt-2 text-xs text-neutral-500">●日記 📱請求 💼給料 ／ ■記録あり ／ ▣今日</div>
+      </section>
+
+      <!-- 日記 -->
+      <section class="bg-white rounded-2xl shadow-sm p-4 space-y-2">
+        <div class="text-sm font-semibold">今日の日記（50–120字・金額は公開されません）</div>
+        <textarea id="diary" rows="3" maxlength="120" placeholder="例：カフェは1回に。歩いて帰った。" class="w-full px-3 py-2 border rounded-xl"></textarea>
+        <div class="flex items-center gap-2 text-xs">
+          <select class="px-2 py-1 border rounded-lg">
+            <option>公開範囲：全体</option>
+            <option>公開範囲：限定</option>
+            <option>公開範囲：自分のみ</option>
+          </select>
+          <button id="btnPostDiary" class="ml-auto px-4 py-2 rounded-xl btn-primary">投稿 +6pt</button>
+        </div>
+      </section>
+
+      <div class="text-center">
+        <button id="toInvest" class="px-6 py-3 rounded-2xl btn-primary font-bold shadow">今日の記録で獲得ポイント → 投資・勉強へ</button>
+      </div>
+    </section>
+
+    <!-- INVEST（投資・勉強） -->
+    <section id="invest" class="hidden space-y-4">
+      <section class="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between">
+        <div>
+          <div class="text-xs text-neutral-500">今日の年</div>
+          <div class="text-xl font-bold"><span id="yearTxt"></span>年 <span id="badge" class="ml-2 text-sm"></span></div>
+          <div class="text-sm text-neutral-600">残り学習ポイント: <b><span id="pts2">1,200</span>pt</b></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnHint" class="px-3 py-2 rounded-xl border text-sm">ヒントを見る</button>
+          <button class="px-3 py-2 rounded-xl border text-sm" onclick="switchTab('home')">戻る</button>
+        </div>
+      </section>
+
+      <section id="hintBox" class="hidden bg-primary/20 border border-primary text-[#083b37] rounded-2xl p-4 text-sm">
+        <div class="font-semibold mb-1">ヒント</div>
+        <ul id="hintList" class="list-disc ml-5 space-y-1"></ul>
+      </section>
+
+      <section id="choices" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></section>
+
+      <section id="resultBox" class="hidden bg-white rounded-2xl shadow-sm p-4">
+        <div class="text-sm">選択：<b id="choiceName">-</b></div>
+        <div class="text-2xl font-bold mt-1">今日の結果：<span id="retSign"></span><span id="ret">0</span>%</div>
+        <div class="text-sm text-neutral-600">学習ポイント：<span id="pts3">1,200</span>pt（下限100pt維持）</div>
+        <div class="mt-3 text-sm">学びカード：<span id="learnTxt"></span></div>
+        <div class="mt-3"><button id="btnNextYear" class="px-4 py-2 rounded-xl btn-primary">次の年へ</button></div>
+      </section>
+
+      <section class="bg-white rounded-2xl shadow-sm p-4">
+        <div class="text-sm font-semibold mb-2">ミニ・リーダーボード（ダミー）</div>
+        <ol class="text-sm space-y-1">
+          <li>1位 みゆ: 1,980pt</li>
+          <li>2位 あかね: 1,720pt</li>
+          <li>3位 あや: 1,540pt</li>
+          <li>あなた: <span id="pts4">1,200</span>pt</li>
+        </ol>
+      </section>
+    </section>
+
+    <!-- TIMELINE（フォロー無し・返信例つき） -->
+    <section id="timeline" class="hidden space-y-4">
+      <section class="bg-white rounded-2xl shadow-sm p-4 space-y-2">
+        <div class="text-sm font-semibold">短日記を投稿（50–120字）※金額は公開されません</div>
+        <textarea rows="3" maxlength="120" placeholder="例：今日は寄り道せず帰宅！" class="w-full px-3 py-2 border rounded-xl"></textarea>
+        <div class="flex items-center gap-2 text-xs">
+          <select class="px-2 py-1 border rounded-lg">
+            <option>公開範囲：全体</option>
+            <option>公開範囲：限定</option>
+            <option>公開範囲：自分のみ</option>
+          </select>
+          <button class="ml-auto px-4 py-2 rounded-xl btn-primary">投稿</button>
+        </div>
+      </section>
+
+      <!-- フィード（返信スレ表示のサンプル） -->
+      <section class="space-y-3" id="feed"></section>
+    </section>
+  </main>
+
+  <!-- 下タブナビ（固定） -->
+  <nav class="fixed bottom-0 inset-x-0 bg-white border-t p-2 grid grid-cols-3 gap-2 z-10">
+    <button data-tab="home" class="nav-btn py-2 rounded-xl tab-active">目標家計簿</button>
+    <button data-tab="invest" class="nav-btn py-2 rounded-xl tab-inactive">投資・勉強</button>
+    <button data-tab="timeline" class="nav-btn py-2 rounded-xl tab-inactive">タイムライン</button>
+  </nav>
+
+  <script>
+    // ====== 状態 ======
+    let points = 1200;
+    let tag = "saving";
+    let today = new Date();
+    const YEARS = [1973, 1996, 2008];
+    let dayIdx = 0;
+    let hintLevel = 0;
+
+    const HINTS = {
+      1973: {
+        badge: "⛽️ オイルショック",
+        beginner: ["キーワード：原油・供給不安","物価が上がりやすく、景気は冷えやすい時期。","インフレ時に強い資産を思い出そう。"],
+        advanced: ["コストプッシュ/スタグフ懸念","金利上昇でバリュエーション圧迫","実物資産とディフェンシブの使い分け"],
+        learn: "原油供給ショックでインフレ圧力が高まり、株は割引率上昇で逆風。金など実物資産の役割を確認。"
+      },
+      1996: {
+        badge: "🧦 コギャル/渋谷",
+        beginner: ["流行の年。物価は上がりにくい時期。","金利は低め。守りの資産も思い出そう。","為替/政策で株が敏感。分散を意識。"],
+        advanced: ["低インフレ/低金利レジーム","実質金利・為替の変化に注意","ヘッジとリバランスに留意"],
+        learn: "90年代半ばは低インフレ・低金利が続き、株は外部要因に敏感。債券の下支えや金のヘッジも学べる。"
+      },
+      2008: {
+        badge: "🧱 金融危機",
+        beginner: ["信用が縮む年","株は大きく揺れやすい","守りと分散を意識"],
+        advanced: ["デレバレッジ","政策金利低下→国債金利低下","相関変化に注意"],
+        learn: "レバレッジの巻き戻しでリスク資産は下落。安全資産のクッションや相関の変化を学ぶ。"
+      }
+    };
+    const YEAR_RET = {1973:{equity:-17,bond:-6,gold:60},1996:{equity:5,bond:3,gold:-5},2008:{equity:-40,bond:7,gold:5}};
+    const BEGIN = [
+      { id:"EQUITY", label:"株100%", retKey:"equity" },
+      { id:"BOND",   label:"債券100%", retKey:"bond" },
+      { id:"GOLD",   label:"金100%",   retKey:"gold" }
+    ];
+    const ADV = {
+      1973:[{id:"A",label:"株30%+債20%+金50%",mix:{equity:0.3,bond:0.2,gold:0.5}},
+            {id:"B",label:"株40%+金60%",      mix:{equity:0.4,bond:0.0,gold:0.6}},
+            {id:"C",label:"債60%+金40%",      mix:{equity:0.0,bond:0.6,gold:0.4}}],
+      1996:[{id:"A",label:"株70%+債30%",      mix:{equity:0.7,bond:0.3,gold:0.0}},
+            {id:"B",label:"株50%+金50%",      mix:{equity:0.5,bond:0.0,gold:0.5}},
+            {id:"C",label:"債40%+金60%",      mix:{equity:0.0,bond:0.4,gold:0.6}}],
+      2008:[{id:"A",label:"債70%+金30%",      mix:{equity:0.0,bond:0.7,gold:0.3}},
+            {id:"B",label:"株20%+債40%+金40%",mix:{equity:0.2,bond:0.4,gold:0.4}},
+            {id:"C",label:"株40%+債60%",      mix:{equity:0.4,bond:0.6,gold:0.0}}]
+    };
+
+    // ====== ユーティリティ ======
+    const el = id => document.getElementById(id);
+    const fmt = n => n.toLocaleString("ja-JP");
+    function ymd(d){ return d.toISOString().slice(0,10); }
+
+    // タブ切替（下ナビ）
+    function switchTab(name){
+      ["home","invest","timeline"].forEach(t=>{
+        el(t).classList.toggle("hidden", t!==name);
+      });
+      document.querySelectorAll(".nav-btn").forEach(btn=>{
+        const active = btn.dataset.tab===name;
+        btn.classList.toggle("tab-active", active);
+        btn.classList.toggle("tab-inactive", !active);
+      });
+      if(name==="invest") renderInvest();
+      if(name==="timeline") renderFeed();
+    }
+    document.querySelectorAll(".nav-btn").forEach(b=> b.addEventListener("click", ()=> switchTab(b.dataset.tab)));
+
+    // ポイント表示
+    function drawPoints(){
+      ["pts","pts2","pts3","pts4"].forEach(id=>{ if(el(id)) el(id).textContent = fmt(points); });
+    }
+    drawPoints();
+
+    // 進捗リング（ダミー27%）
+    function drawRing(p=27){
+      el("ringFill").style.clipPath = `inset(${100 - p}% 0 0 0)`;
+      el("progressTxt").textContent = p + "%";
+    }
+    drawRing(27);
+
+    // タグ選択
+    document.querySelectorAll(".tag-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".tag-btn").forEach(b=>{
+          b.classList.remove("tab-active"); b.classList.add("tab-inactive");
+        });
+        btn.classList.remove("tab-inactive"); btn.classList.add("tab-active");
+        tag = btn.dataset.tag;
+      });
+    });
+
+    // 保存 +10pt（承認フロー無し）
+    el("btnSaveLog").addEventListener("click", ()=>{
+      points += 10; drawPoints();
+      alert("保存しました（ダミー。記録で+10pt）");
+    });
+
+    // 日記 +6pt
+    el("btnPostDiary").addEventListener("click", ()=>{
+      points += 6; drawPoints();
+      el("diary").value = "";
+      alert("投稿しました（ダミー。+6pt）");
+    });
+
+    // カレンダー
+    let viewY = today.getFullYear(), viewM = today.getMonth();
+    function monthMatrix(y,m){
+      const first = new Date(y,m,1), last = new Date(y,m+1,0);
+      const start = first.getDay(), days = last.getDate(); const out=[];
+      for(let i=0;i<start;i++) out.push(null);
+      for(let d=1; d<=days; d++) out.push(new Date(y,m,d));
+      while(out.length % 7 !== 0) out.push(null);
+      return out;
+    }
+    function renderCalendar(){
+      el("monthLabel").textContent = `${viewY}年 ${viewM+1}月`;
+      const grid = el("calendar"); grid.innerHTML="";
+      monthMatrix(viewY, viewM).forEach(d=>{
+        const box = document.createElement("div");
+        box.className = "aspect-square rounded-xl relative border bg-white border-neutral-200";
+        if(d){
+          const isToday = ymd(d)===ymd(today);
+          if(isToday) box.classList.add("ring-today");
+          if(isToday){ // ダミー：今日だけ記録あり & 日記ドット
+            box.classList.add("bg-primary/20","border-primary");
+            const dotDiary = document.createElement("span");
+            dotDiary.className = "w-2 h-2 bg-sky-500 rounded-full absolute bottom-1 left-1";
+            box.appendChild(dotDiary);
+          }
+          const label = document.createElement("div");
+          label.className = "absolute top-1 left-2 text-xs"; label.textContent = d.getDate();
+          box.appendChild(label);
+        }
+        grid.appendChild(box);
+      });
+    }
+    renderCalendar();
+    el("prevMonth").onclick = ()=>{ viewM===0 ? (viewY--, viewM=11) : viewM--; renderCalendar(); };
+    el("nextMonth").onclick = ()=>{ viewM===11? (viewY++, viewM=0) : viewM++; renderCalendar(); };
+
+    // 投資タブ
+    function currentYear(){ return YEARS[dayIdx % YEARS.length]; }
+    function isAdvanced(){ return points >= 1500 || dayIdx >= 2; }
+    function renderInvest(){
+      const yr = currentYear(), pack = HINTS[yr];
+      el("yearTxt").textContent = yr;
+      el("badge").textContent = pack.badge;
+      el("pts2").textContent = fmt(points);
+      el("resultBox").classList.add("hidden");
+      // ヒント
+      hintLevel = 0; el("hintBox").classList.add("hidden"); el("hintList").innerHTML="";
+      // 選択肢
+      const chs = isAdvanced()? ADV[yr] : BEGIN;
+      const wrap = el("choices"); wrap.innerHTML="";
+      chs.forEach(c=>{
+        const btn = document.createElement("button");
+        btn.className = "bg-white rounded-2xl shadow-sm p-4 text-left hover:shadow-md transition";
+        btn.innerHTML = `<div class="text-sm text-neutral-500">選択肢</div>
+                         <div class="text-lg font-bold">${c.label}</div>
+                         <div class="mt-1 text-xs text-neutral-500">史実に基づく配分シミュ</div>`;
+        btn.onclick = ()=> applyChoice(c);
+        wrap.appendChild(btn);
+      });
+    }
+    el("btnHint").onclick = ()=>{
+      hintLevel = Math.min(3, hintLevel+1);
+      const yr = currentYear(), pack = HINTS[yr];
+      const arr = (isAdvanced()? pack.advanced : pack.beginner).slice(0, hintLevel);
+      const list = el("hintList"); list.innerHTML="";
+      arr.forEach(t=>{ const li=document.createElement("li"); li.textContent=t; list.appendChild(li); });
+      el("hintBox").classList.remove("hidden");
+    };
+    function applyChoice(c){
+      const yr = currentYear(), r = YEAR_RET[yr];
+      let ret=0;
+      if(c.mix){
+        ret = Math.round((c.mix.equity*r.equity + c.mix.bond*r.bond + c.mix.gold*r.gold)*10)/10;
+      }else{
+        ret = r[c.retKey];
+      }
+      points = Math.max(100, Math.round(points*(1+ret/100)));
+      drawPoints();
+      el("choiceName").textContent = c.label;
+      el("ret").textContent = Math.abs(ret);
+      el("retSign").textContent = ret>=0? "+":"-";
+      el("pts3").textContent = fmt(points);
+      el("learnTxt").textContent = HINTS[yr].learn;
+      el("resultBox").classList.remove("hidden");
+      el("pts4").textContent = fmt(points);
+    }
+    el("btnNextYear").onclick = ()=>{ dayIdx++; renderInvest(); };
+
+    // タイムライン＋返信サンプル
+    const FEED = [
+      {
+        user:"🐱 みゆ", body:"外食を1回我慢！旅行まで頑張る🥤",
+        heat:12, tags:["旅行"],
+        replies:[
+          {user:"🦊 なお", body:"私も今日は手作り弁当〜！", time:"3分前"},
+          {user:"🐼 りこ", body:"がんばれ〜👏", time:"1分前"}
+        ]
+      },
+      {
+        user:"🦊 なお", body:"コンビニ立ち寄らず帰宅チャレンジ成功",
+        heat:8, tags:["節約"],
+        replies:[
+          {user:"🐱 みゆ", body:"えらい！！", time:"5分前"}
+        ]
+      },
+      {
+        user:"🐼 りこ", body:"給料日5%自動貯金オンにした✍️",
+        heat:20, tags:["給料日"],
+        replies:[]
+      }
+    ];
+    function renderFeed(){
+      const box = el("feed"); box.innerHTML="";
+      FEED.forEach(p=>{
+        const art = document.createElement("article");
+        art.className = "bg-white rounded-2xl shadow-sm p-4";
+        const repliesHTML = p.replies.map(r =>
+          `<div class="mt-2 pl-4 border-l-2 border-primary/60">
+            <div class="text-sm"><span class="font-semibold">${r.user}</span> <span class="text-xs text-neutral-500">${r.time}</span></div>
+            <div class="text-sm mt-1">${r.body}</div>
+          </div>`).join("");
+
+        art.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">${p.user}</div>
+            <div class="text-xs text-neutral-500">タグ: ${p.tags.join(" / ")}</div>
+          </div>
+          <div class="mt-1 text-sm">${p.body}</div>
+          <div class="mt-2 flex items-center gap-2 text-sm">
+            <button class="px-3 py-1 rounded-full border">❤️</button>
+            <button class="px-3 py-1 rounded-full border">がんばれ</button>
+            <button class="px-3 py-1 rounded-full border">👏</button>
+            <div class="ml-auto text-xs text-neutral-500">温度 ${p.heat}</div>
+          </div>
+          ${repliesHTML}
+          <div class="mt-3 flex items-center gap-2">
+            <input placeholder="返信を書く…" class="flex-1 px-3 py-2 border rounded-xl text-sm"/>
+            <button class="px-3 py-2 rounded-xl btn-primary text-sm">返信</button>
+          </div>
+        `;
+        box.appendChild(art);
+      });
+    }
+
+    // CTA
+    el("toInvest").onclick = ()=> switchTab("invest");
+  </script>
+</body>
+</html>
