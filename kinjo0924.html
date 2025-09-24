@@ -3,40 +3,33 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>きんゆう女子｜MVPモック（静的・下タブ・#8ddcd1）</title>
+  <title>きんゆう女子｜MVPモック（昨日の結果＋豆知識 / 5:00更新）</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Tailwind CDN用の軽い拡張（任意）
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: "#8ddcd1"
-          }
-        }
-      }
-    }
+    tailwind.config = { theme:{ extend:{ colors:{ primary:"#8ddcd1", primaryDark:"#5bb9ab" } } } }
   </script>
   <style>
-    :root { --primary:#8ddcd1; }
-    .btn-primary{ background:var(--primary); color:#083b37; }
-    .btn-primary:hover{ filter:brightness(0.95); }
+    :root { --primary:#8ddcd1; --ink:#083b37; }
+    .btn-primary{ background:var(--primary); color:var(--ink); font-weight:700; }
+    .btn-primary:hover{ filter:brightness(0.97); }
+    .btn-outline{ border-color:var(--primary); color:var(--ink); }
+    .btn-outline:hover{ background:rgba(141,220,209,.15); }
     .ring-today{ box-shadow:0 0 0 2px #111 inset; border-radius:12px; }
-    .tab-active{ background:var(--primary); color:#083b37; font-weight:700; }
+    .tab-active{ background:var(--primary); color:var(--ink); font-weight:700; }
     .tab-inactive{ background:#f3f4f6; color:#111; }
+    .choice-btn{ border:2px solid var(--primary); background:#fff; border-radius:14px; padding:12px; text-align:center; font-weight:700; }
+    .choice-btn:active{ background:rgba(141,220,209,.15); transform:translateY(1px); }
   </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900">
   <!-- ヘッダー -->
   <header class="px-4 py-3 border-b bg-white sticky top-0 z-10 flex items-center justify-between">
     <div class="font-bold">きんゆう女子（MVPモック）</div>
-    <div class="text-xs text-neutral-500">
-      学習ポイント: <span id="pts" class="font-semibold">1,200</span>pt
-    </div>
+    <div class="text-xs text-neutral-500">学習ポイント: <span id="pts" class="font-semibold">1,200</span>pt</div>
   </header>
 
   <!-- 本文 -->
-  <main class="max-w-3xl mx-auto p-4 pb-28" id="content">
+  <main class="max-w-3xl mx-auto p-4 pb-28">
     <!-- HOME（目標家計簿） -->
     <section id="home" class="space-y-4">
       <!-- 目標カード -->
@@ -52,7 +45,23 @@
         </div>
       </section>
 
-      <!-- 入力ボックス（承認フローは削除） -->
+      <!-- ▼ 並び順：カレンダー → 入力 ▼ -->
+
+      <!-- カレンダー（承認フローなし） -->
+      <section class="bg-white rounded-2xl shadow-sm p-4">
+        <div class="flex items-center justify-between mb-2">
+          <button id="prevMonth" class="text-sm px-2 py-1">←</button>
+          <div id="monthLabel" class="font-semibold"></div>
+          <button id="nextMonth" class="text-sm px-2 py-1">→</button>
+        </div>
+        <div class="grid grid-cols-7 gap-2 text-center text-xs text-neutral-500 mb-1">
+          <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
+        </div>
+        <div id="calendar" class="grid grid-cols-7 gap-2"></div>
+        <div class="mt-2 text-xs text-neutral-500">●日記 📱請求 💼給料 ／ ■記録あり ／ ▣今日</div>
+      </section>
+
+      <!-- 入力ボックス -->
       <section class="bg-white rounded-2xl shadow-sm p-4 space-y-3">
         <div class="grid grid-cols-3 gap-2">
           <input id="inAmount" placeholder="金額（空でもOK）" class="col-span-1 px-3 py-2 border rounded-xl"/>
@@ -67,20 +76,6 @@
             <button id="btnSaveLog" class="px-4 py-2 rounded-xl btn-primary">保存 +10pt</button>
           </div>
         </div>
-      </section>
-
-      <!-- カレンダー（承認や提案ドットは無し） -->
-      <section class="bg-white rounded-2xl shadow-sm p-4">
-        <div class="flex items-center justify-between mb-2">
-          <button id="prevMonth" class="text-sm px-2 py-1">←</button>
-          <div id="monthLabel" class="font-semibold"></div>
-          <button id="nextMonth" class="text-sm px-2 py-1">→</button>
-        </div>
-        <div class="grid grid-cols-7 gap-2 text-center text-xs text-neutral-500 mb-1">
-          <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
-        </div>
-        <div id="calendar" class="grid grid-cols-7 gap-2"></div>
-        <div class="mt-2 text-xs text-neutral-500">●日記 📱請求 💼給料 ／ ■記録あり ／ ▣今日</div>
       </section>
 
       <!-- 日記 -->
@@ -104,33 +99,59 @@
 
     <!-- INVEST（投資・勉強） -->
     <section id="invest" class="hidden space-y-4">
-      <section class="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between">
-        <div>
-          <div class="text-xs text-neutral-500">今日の年</div>
-          <div class="text-xl font-bold"><span id="yearTxt"></span>年 <span id="badge" class="ml-2 text-sm"></span></div>
-          <div class="text-sm text-neutral-600">残り学習ポイント: <b><span id="pts2">1,200</span>pt</b></div>
+      <!-- 昨日の結果＋豆知識（初心者向け） -->
+      <section class="bg-primary/20 border border-primary rounded-2xl p-4">
+        <div class="flex items-start gap-3">
+          <div class="text-xl">📈</div>
+          <div class="flex-1">
+            <div class="text-xs text-neutral-600">昨日の結果（5:00更新済み）</div>
+            <div class="font-bold text-lg" id="yTitle">1996年｜選択：株100% → 結果：+5%</div>
+            <div class="text-sm mt-1" id="yDesc">ポイント反映：+5%（学習ポイントは教育用の数値です）</div>
+            <details class="mt-2">
+              <summary class="text-sm font-semibold cursor-pointer">💡豆知識（初心者向け）</summary>
+              <div class="text-sm mt-1" id="yTip">
+                株は会社の将来に投資する資産。金利が低い時期は、企業が借入しやすく成長しやすい＝株が有利なことがあります。
+              </div>
+            </details>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btnHint" class="px-3 py-2 rounded-xl border text-sm">ヒントを見る</button>
-          <button class="px-3 py-2 rounded-xl border text-sm" onclick="switchTab('home')">戻る</button>
+        <p class="text-xs text-neutral-600 mt-2">※本コンテンツは学習用シミュレーションです。実際の投資推奨ではありません。</p>
+      </section>
+
+      <!-- ルール案内 -->
+      <section class="bg-white rounded-2xl shadow-sm p-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <div class="text-xs text-neutral-500">今日の年（回答後の結果は明朝5:00に表示）</div>
+            <div class="text-xl font-bold"><span id="yearTxt"></span>年 <span id="badge" class="ml-2 text-sm"></span></div>
+          </div>
+          <div class="text-sm text-neutral-600">学習ポイント：<b><span id="pts2">1,200</span>pt</b></div>
         </div>
       </section>
 
+      <!-- 横三択（スマホでも横並び） -->
+      <section id="choices" class="flex gap-2"></section>
+
+      <!-- ヒント -->
       <section id="hintBox" class="hidden bg-primary/20 border border-primary text-[#083b37] rounded-2xl p-4 text-sm">
         <div class="font-semibold mb-1">ヒント</div>
         <ul id="hintList" class="list-disc ml-5 space-y-1"></ul>
+        <div class="text-xs mt-2 text-neutral-600">※ヒントは事実の背景を学ぶためのものです（答えそのものは出しません）。</div>
       </section>
 
-      <section id="choices" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></section>
+      <div class="flex gap-2">
+        <button id="btnHint" class="px-3 py-2 rounded-xl btn-outline border-2 text-sm">ヒントを見る</button>
+        <button class="px-3 py-2 rounded-xl border text-sm" onclick="switchTab('home')">家計簿に戻る</button>
+      </div>
 
-      <section id="resultBox" class="hidden bg-white rounded-2xl shadow-sm p-4">
-        <div class="text-sm">選択：<b id="choiceName">-</b></div>
-        <div class="text-2xl font-bold mt-1">今日の結果：<span id="retSign"></span><span id="ret">0</span>%</div>
-        <div class="text-sm text-neutral-600">学習ポイント：<span id="pts3">1,200</span>pt（下限100pt維持）</div>
-        <div class="mt-3 text-sm">学びカード：<span id="learnTxt"></span></div>
-        <div class="mt-3"><button id="btnNextYear" class="px-4 py-2 rounded-xl btn-primary">次の年へ</button></div>
+      <!-- 受付完了（結果は翌朝） -->
+      <section id="pendingBox" class="hidden bg-white rounded-2xl shadow-sm p-4">
+        <div class="text-sm">今日の回答：<b id="pendingChoice">-</b> を受け付けました。</div>
+        <div class="mt-1 text-amber-700 text-sm">🕔 結果は <b>明日の朝 5:00</b> に表示されます。</div>
+        <div class="mt-2 text-xs text-neutral-600">※教育用シミュレーション：結果は学習ポイントに反映されます。</div>
       </section>
 
+      <!-- ミニ・リーダーボード -->
       <section class="bg-white rounded-2xl shadow-sm p-4">
         <div class="text-sm font-semibold mb-2">ミニ・リーダーボード（ダミー）</div>
         <ol class="text-sm space-y-1">
@@ -142,7 +163,7 @@
       </section>
     </section>
 
-    <!-- TIMELINE（フォロー無し・返信例つき） -->
+    <!-- TIMELINE（返信例あり） -->
     <section id="timeline" class="hidden space-y-4">
       <section class="bg-white rounded-2xl shadow-sm p-4 space-y-2">
         <div class="text-sm font-semibold">短日記を投稿（50–120字）※金額は公開されません</div>
@@ -157,7 +178,6 @@
         </div>
       </section>
 
-      <!-- フィード（返信スレ表示のサンプル） -->
       <section class="space-y-3" id="feed"></section>
     </section>
   </main>
@@ -175,28 +195,24 @@
     let tag = "saving";
     let today = new Date();
     const YEARS = [1973, 1996, 2008];
-    let dayIdx = 0;
-    let hintLevel = 0;
+    let dayIdx = 0, hintLevel = 0, answeredToday = false;
+
+    // 昨日の結果（ダミー初期値）
+    let yesterday = { year: 1996, choice: "株100%", ret: +5, tip: "株は会社の将来に投資。金利が低い時期は企業の資金調達がしやすく、株が有利になりやすいことがあります。" };
 
     const HINTS = {
-      1973: {
-        badge: "⛽️ オイルショック",
-        beginner: ["キーワード：原油・供給不安","物価が上がりやすく、景気は冷えやすい時期。","インフレ時に強い資産を思い出そう。"],
-        advanced: ["コストプッシュ/スタグフ懸念","金利上昇でバリュエーション圧迫","実物資産とディフェンシブの使い分け"],
-        learn: "原油供給ショックでインフレ圧力が高まり、株は割引率上昇で逆風。金など実物資産の役割を確認。"
-      },
-      1996: {
-        badge: "🧦 コギャル/渋谷",
-        beginner: ["流行の年。物価は上がりにくい時期。","金利は低め。守りの資産も思い出そう。","為替/政策で株が敏感。分散を意識。"],
-        advanced: ["低インフレ/低金利レジーム","実質金利・為替の変化に注意","ヘッジとリバランスに留意"],
-        learn: "90年代半ばは低インフレ・低金利が続き、株は外部要因に敏感。債券の下支えや金のヘッジも学べる。"
-      },
-      2008: {
-        badge: "🧱 金融危機",
-        beginner: ["信用が縮む年","株は大きく揺れやすい","守りと分散を意識"],
-        advanced: ["デレバレッジ","政策金利低下→国債金利低下","相関変化に注意"],
-        learn: "レバレッジの巻き戻しでリスク資産は下落。安全資産のクッションや相関の変化を学ぶ。"
-      }
+      1973:{ badge:"⛽️ オイルショック",
+        beginner:["キーワード：原油・供給不安","物価が上がりやすく、景気は冷えやすい時期。","インフレ時に強い資産を思い出そう。"],
+        advanced:["コストプッシュ/スタグフ懸念","金利上昇でバリュエーション圧迫","実物資産とディフェンシブの使い分け"],
+        learn:"原油供給ショックでインフレ圧力が高まり、株は割引率上昇で逆風。金など実物資産の役割を確認。"},
+      1996:{ badge:"🧦 コギャル/渋谷",
+        beginner:["流行の年。物価は上がりにくい時期。","金利は低め。守りの資産も思い出そう。","為替/政策で株が敏感。分散を意識。"],
+        advanced:["低インフレ/低金利レジーム","実質金利・為替の変化に注意","ヘッジとリバランスに留意"],
+        learn:"90年代半ばは低インフレ・低金利が続き、株は外部要因に敏感。債券の下支えや金のヘッジも学べる。"},
+      2008:{ badge:"🧱 金融危機",
+        beginner:["信用が縮む年","株は大きく揺れやすい","守りと分散を意識"],
+        advanced:["デレバレッジ","政策金利低下→国債金利低下","相関変化に注意"],
+        learn:"レバレッジの巻き戻しでリスク資産は下落。安全資産のクッションや相関の変化を学ぶ。"}
     };
     const YEAR_RET = {1973:{equity:-17,bond:-6,gold:60},1996:{equity:5,bond:3,gold:-5},2008:{equity:-40,bond:7,gold:5}};
     const BEGIN = [
@@ -216,16 +232,14 @@
             {id:"C",label:"株40%+債60%",      mix:{equity:0.4,bond:0.6,gold:0.0}}]
     };
 
-    // ====== ユーティリティ ======
+    // ====== UTILS ======
     const el = id => document.getElementById(id);
     const fmt = n => n.toLocaleString("ja-JP");
     function ymd(d){ return d.toISOString().slice(0,10); }
 
-    // タブ切替（下ナビ）
+    // タブ（下ナビ）
     function switchTab(name){
-      ["home","invest","timeline"].forEach(t=>{
-        el(t).classList.toggle("hidden", t!==name);
-      });
+      ["home","invest","timeline"].forEach(t=> el(t).classList.toggle("hidden", t!==name));
       document.querySelectorAll(".nav-btn").forEach(btn=>{
         const active = btn.dataset.tab===name;
         btn.classList.toggle("tab-active", active);
@@ -237,9 +251,7 @@
     document.querySelectorAll(".nav-btn").forEach(b=> b.addEventListener("click", ()=> switchTab(b.dataset.tab)));
 
     // ポイント表示
-    function drawPoints(){
-      ["pts","pts2","pts3","pts4"].forEach(id=>{ if(el(id)) el(id).textContent = fmt(points); });
-    }
+    function drawPoints(){ ["pts","pts2","pts4"].forEach(id=>{ if(el(id)) el(id).textContent = fmt(points); }); }
     drawPoints();
 
     // 進捗リング（ダミー27%）
@@ -252,54 +264,45 @@
     // タグ選択
     document.querySelectorAll(".tag-btn").forEach(btn=>{
       btn.addEventListener("click", ()=>{
-        document.querySelectorAll(".tag-btn").forEach(b=>{
-          b.classList.remove("tab-active"); b.classList.add("tab-inactive");
-        });
+        document.querySelectorAll(".tag-btn").forEach(b=>{ b.classList.remove("tab-active"); b.classList.add("tab-inactive"); });
         btn.classList.remove("tab-inactive"); btn.classList.add("tab-active");
         tag = btn.dataset.tag;
       });
     });
 
-    // 保存 +10pt（承認フロー無し）
-    el("btnSaveLog").addEventListener("click", ()=>{
-      points += 10; drawPoints();
-      alert("保存しました（ダミー。記録で+10pt）");
-    });
+    // 保存 +10pt
+    el("btnSaveLog").addEventListener("click", ()=>{ points += 10; drawPoints(); alert("保存しました（ダミー。+10pt）"); });
 
     // 日記 +6pt
-    el("btnPostDiary").addEventListener("click", ()=>{
-      points += 6; drawPoints();
-      el("diary").value = "";
-      alert("投稿しました（ダミー。+6pt）");
-    });
+    el("btnPostDiary").addEventListener("click", ()=>{ points += 6; drawPoints(); el("diary").value=""; alert("投稿しました（ダミー。+6pt）"); });
 
     // カレンダー
     let viewY = today.getFullYear(), viewM = today.getMonth();
     function monthMatrix(y,m){
-      const first = new Date(y,m,1), last = new Date(y,m+1,0);
-      const start = first.getDay(), days = last.getDate(); const out=[];
+      const first=new Date(y,m,1), last=new Date(y,m+1,0);
+      const start=first.getDay(), days=last.getDate(), out=[];
       for(let i=0;i<start;i++) out.push(null);
       for(let d=1; d<=days; d++) out.push(new Date(y,m,d));
-      while(out.length % 7 !== 0) out.push(null);
+      while(out.length%7!==0) out.push(null);
       return out;
     }
     function renderCalendar(){
       el("monthLabel").textContent = `${viewY}年 ${viewM+1}月`;
-      const grid = el("calendar"); grid.innerHTML="";
+      const grid=el("calendar"); grid.innerHTML="";
       monthMatrix(viewY, viewM).forEach(d=>{
-        const box = document.createElement("div");
-        box.className = "aspect-square rounded-xl relative border bg-white border-neutral-200";
+        const box=document.createElement("div");
+        box.className="aspect-square rounded-xl relative border bg-white border-neutral-200";
         if(d){
           const isToday = ymd(d)===ymd(today);
           if(isToday) box.classList.add("ring-today");
-          if(isToday){ // ダミー：今日だけ記録あり & 日記ドット
+          if(isToday){
             box.classList.add("bg-primary/20","border-primary");
-            const dotDiary = document.createElement("span");
-            dotDiary.className = "w-2 h-2 bg-sky-500 rounded-full absolute bottom-1 left-1";
+            const dotDiary=document.createElement("span");
+            dotDiary.className="w-2 h-2 bg-sky-500 rounded-full absolute bottom-1 left-1";
             box.appendChild(dotDiary);
           }
-          const label = document.createElement("div");
-          label.className = "absolute top-1 left-2 text-xs"; label.textContent = d.getDate();
+          const label=document.createElement("div");
+          label.className="absolute top-1 left-2 text-xs"; label.textContent=d.getDate();
           box.appendChild(label);
         }
         grid.appendChild(box);
@@ -312,27 +315,55 @@
     // 投資タブ
     function currentYear(){ return YEARS[dayIdx % YEARS.length]; }
     function isAdvanced(){ return points >= 1500 || dayIdx >= 2; }
+
+    function renderYesterdayBanner(){
+      el("yTitle").textContent = `${yesterday.year}年｜選択：${yesterday.choice} → 結果：${yesterday.ret>0?"+":""}${yesterday.ret}%`;
+      el("yDesc").textContent = `ポイント反映：${yesterday.ret>0?"+":""}${yesterday.ret}%（学習ポイントは教育用の数値です）`;
+      el("yTip").textContent = yesterday.tip;
+    }
+
     function renderInvest(){
+      renderYesterdayBanner();
       const yr = currentYear(), pack = HINTS[yr];
       el("yearTxt").textContent = yr;
       el("badge").textContent = pack.badge;
       el("pts2").textContent = fmt(points);
-      el("resultBox").classList.add("hidden");
-      // ヒント
+      el("pendingBox").classList.add("hidden");
       hintLevel = 0; el("hintBox").classList.add("hidden"); el("hintList").innerHTML="";
-      // 選択肢
       const chs = isAdvanced()? ADV[yr] : BEGIN;
       const wrap = el("choices"); wrap.innerHTML="";
+      wrap.className = "flex gap-2";
       chs.forEach(c=>{
         const btn = document.createElement("button");
-        btn.className = "bg-white rounded-2xl shadow-sm p-4 text-left hover:shadow-md transition";
-        btn.innerHTML = `<div class="text-sm text-neutral-500">選択肢</div>
-                         <div class="text-lg font-bold">${c.label}</div>
-                         <div class="mt-1 text-xs text-neutral-500">史実に基づく配分シミュ</div>`;
-        btn.onclick = ()=> applyChoice(c);
+        btn.className = "choice-btn flex-1 min-w-0";
+        btn.innerHTML = `<div class="text-xs text-neutral-500 font-normal">選択肢</div>
+                         <div class="text-base sm:text-lg">${c.label}</div>`;
+        btn.onclick = ()=> onAnswer(c);
         wrap.appendChild(btn);
       });
     }
+
+    function onAnswer(c){
+      // 回答のみ受け付け、結果は翌朝。ここでは pending を表示。
+      answeredToday = true;
+      el("pendingChoice").textContent = c.label;
+      el("pendingBox").classList.remove("hidden");
+
+      // ダミー：翌朝に表示される「昨日の結果」を差し替える（即時に見た目だけ更新）
+      const yr = currentYear(), r = YEAR_RET[yr];
+      let ret=0;
+      if(c.mix){ ret = Math.round((c.mix.equity*r.equity + c.mix.bond*r.bond + c.mix.gold*r.gold)*10)/10; }
+      else { ret = r[c.retKey]; }
+      yesterday = {
+        year: yr, choice: c.label, ret: ret,
+        tip: (yr===1973? "物の値段が上がる“インフレ”のときは、金などの実物資産が値持ちしやすいと言われます。":
+              yr===2008? "景気が悪くなると安全資産が買われやすく、株は大きく下がることがあります。分散が大切。":
+                         "金利が低いと企業が投資をしやすく、株価にプラスになることがあります。")
+      };
+      // ポイントは翌朝反映の想定なので、ここでは増減しない
+      alert("回答を受け付けました！結果は明日の朝5:00に表示されます。");
+    }
+
     el("btnHint").onclick = ()=>{
       hintLevel = Math.min(3, hintLevel+1);
       const yr = currentYear(), pack = HINTS[yr];
@@ -341,48 +372,14 @@
       arr.forEach(t=>{ const li=document.createElement("li"); li.textContent=t; list.appendChild(li); });
       el("hintBox").classList.remove("hidden");
     };
-    function applyChoice(c){
-      const yr = currentYear(), r = YEAR_RET[yr];
-      let ret=0;
-      if(c.mix){
-        ret = Math.round((c.mix.equity*r.equity + c.mix.bond*r.bond + c.mix.gold*r.gold)*10)/10;
-      }else{
-        ret = r[c.retKey];
-      }
-      points = Math.max(100, Math.round(points*(1+ret/100)));
-      drawPoints();
-      el("choiceName").textContent = c.label;
-      el("ret").textContent = Math.abs(ret);
-      el("retSign").textContent = ret>=0? "+":"-";
-      el("pts3").textContent = fmt(points);
-      el("learnTxt").textContent = HINTS[yr].learn;
-      el("resultBox").classList.remove("hidden");
-      el("pts4").textContent = fmt(points);
-    }
-    el("btnNextYear").onclick = ()=>{ dayIdx++; renderInvest(); };
 
-    // タイムライン＋返信サンプル
+    // タイムライン（返信サンプル）
     const FEED = [
-      {
-        user:"🐱 みゆ", body:"外食を1回我慢！旅行まで頑張る🥤",
-        heat:12, tags:["旅行"],
-        replies:[
-          {user:"🦊 なお", body:"私も今日は手作り弁当〜！", time:"3分前"},
-          {user:"🐼 りこ", body:"がんばれ〜👏", time:"1分前"}
-        ]
-      },
-      {
-        user:"🦊 なお", body:"コンビニ立ち寄らず帰宅チャレンジ成功",
-        heat:8, tags:["節約"],
-        replies:[
-          {user:"🐱 みゆ", body:"えらい！！", time:"5分前"}
-        ]
-      },
-      {
-        user:"🐼 りこ", body:"給料日5%自動貯金オンにした✍️",
-        heat:20, tags:["給料日"],
-        replies:[]
-      }
+      { user:"🐱 みゆ", body:"外食を1回我慢！旅行まで頑張る🥤", heat:12, tags:["旅行"],
+        replies:[{user:"🦊 なお", body:"私も今日は手作り弁当〜！", time:"3分前"},{user:"🐼 りこ", body:"がんばれ〜👏", time:"1分前"}] },
+      { user:"🦊 なお", body:"コンビニ立ち寄らず帰宅チャレンジ成功", heat:8, tags:["節約"],
+        replies:[{user:"🐱 みゆ", body:"えらい！！", time:"5分前"}] },
+      { user:"🐼 りこ", body:"給料日5%自動貯金オンにした✍️", heat:20, tags:["給料日"], replies:[] }
     ];
     function renderFeed(){
       const box = el("feed"); box.innerHTML="";
@@ -394,7 +391,6 @@
             <div class="text-sm"><span class="font-semibold">${r.user}</span> <span class="text-xs text-neutral-500">${r.time}</span></div>
             <div class="text-sm mt-1">${r.body}</div>
           </div>`).join("");
-
         art.innerHTML = `
           <div class="flex items-center justify-between">
             <div class="font-semibold">${p.user}</div>
@@ -411,14 +407,17 @@
           <div class="mt-3 flex items-center gap-2">
             <input placeholder="返信を書く…" class="flex-1 px-3 py-2 border rounded-xl text-sm"/>
             <button class="px-3 py-2 rounded-xl btn-primary text-sm">返信</button>
-          </div>
-        `;
+          </div>`;
         box.appendChild(art);
       });
     }
 
     // CTA
-    el("toInvest").onclick = ()=> switchTab("invest");
+    document.getElementById("toInvest").onclick = ()=> switchTab("invest");
+
+    // 初期描画
+    renderCalendar();
+    renderFeed();
   </script>
 </body>
 </html>
